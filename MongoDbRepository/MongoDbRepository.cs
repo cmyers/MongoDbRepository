@@ -11,10 +11,12 @@ namespace MongoDbRepository
     {
         private readonly IMongoCollection<T> _collection;
 
-        public MongoDbRepository(MongoClient client, string databaseName, string collectionName)
+        public MongoDbRepository(string connectionString, string databaseName, string collectionName)
         {
+            var client = new MongoClient(connectionString);
             var database = client.GetDatabase(databaseName);
             _collection = database.GetCollection<T>(collectionName);
+
             InitialiseCustom();
         }
 
