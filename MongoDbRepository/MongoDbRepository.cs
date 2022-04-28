@@ -24,18 +24,15 @@ namespace MongoDbRepository
         {
             var uniqueStringIndexProperties = typeof(T).GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(MongoDbUnique))).ToList();
 
-            if (uniqueStringIndexProperties.Any())
+            foreach (var propertyInfo in uniqueStringIndexProperties)
             {
-                foreach (var propertyInfo in uniqueStringIndexProperties)
-                {
-                    var options = new CreateIndexOptions { Unique = true };
-                    var propertyInfoName = propertyInfo.Name;
-                    var field = new StringFieldDefinition<T>(propertyInfoName);
-                    var indexDefinition = new IndexKeysDefinitionBuilder<T>().Ascending(field);
-                    var indexModel = new CreateIndexModel<T>(indexDefinition, options);
-                    _collection.Indexes.CreateOne(indexModel);
-                }
-            } 
+                var options = new CreateIndexOptions { Unique = true };
+                var propertyInfoName = propertyInfo.Name;
+                var field = new StringFieldDefinition<T>(propertyInfoName);
+                var indexDefinition = new IndexKeysDefinitionBuilder<T>().Ascending(field);
+                var indexModel = new CreateIndexModel<T>(indexDefinition, options);
+                _collection.Indexes.CreateOne(indexModel);
+            }
         }
 
         public Task AddDocumentAsync(T document)
