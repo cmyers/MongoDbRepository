@@ -51,6 +51,11 @@ namespace MongoDbRepository
             return results.SingleOrDefault();
         }
 
+        public Task<List<T>> GetDocumentsAsync()
+        {
+            return _collection.AsQueryable().ToListAsync();
+        }
+
         public Task<List<T>> GetDocumentsAsync(Expression<Func<T, bool>> linqExpression)
         {
             return _collection.AsQueryable().Where(linqExpression).ToListAsync();
