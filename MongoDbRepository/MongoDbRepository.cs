@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using MongoDbRepository.Attributes;
 using MongoDbRepository.Interfaces;
@@ -35,33 +36,41 @@ namespace MongoDbRepository
             }
         }
 
-        public Task AddDocumentAsync(T document)
+        public Task AddDocumentAsync(T document, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return _collection.InsertOneAsync(document);
+            return _collection.InsertOneAsync(document, cancellationToken: cancellationToken);
         }
 
-        public Task<DeleteResult> DeleteDocumentByIdAsync(string id)
+        public Task<T> DeleteDocumentAsync(ObjectId id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return _collection.DeleteOneAsync(id);
+
+            var filter = Builders<T>.Filter.Where(x => x.Id.Equals(id));
+            return _collection.FindOneAndDeleteAsync(filter, cancellationToken: cancellationToken);
         }
 
-        public async Task<T> GetDocumentByIdAsync(string id)
+        public Task<DeleteResult> DeleteDocumentsAsync(Expression<Func<T, bool>> linqExpression, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var results =  await _collection.FindAsync(x => x.Id.Equals(id));
+            var filter = Builders<T>.Filter.Where(linqExpression);
+            return _collection.DeleteManyAsync(filter, cancellationToken: cancellationToken);
+        }
+
+        public async Task<T> GetDocumentByIdAsync(ObjectId id, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var results = await _collection.FindAsync(x => x.Id.Equals(id), cancellationToken: cancellationToken);
             return results.SingleOrDefault();
         }
 
-        public Task<List<T>> GetDocumentsAsync()
+        public IMongoQueryable<T> GetDocuments()
         {
-            return _collection.AsQueryable().ToListAsync();
+            return _collection.AsQueryable();
         }
 
-        public Task<List<T>> GetDocumentsAsync(Expression<Func<T, bool>> linqExpression)
+        public IMongoQueryable<T> GetDocuments(Expression<Func<T, bool>> linqExpression)
         {
-            return _collection.AsQueryable().Where(linqExpression).ToListAsync();
+            return _collection.AsQueryable().Where(linqExpression);
         }
 
-        public Task<T> UpdateDocumentAsync(T document)
+        public Task<T> UpdateDocumentAsync(T document, CancellationToken cancellationToken = default(CancellationToken))
         {
             var filter = Builders<T>.Filter.Where(x => x.Id.Equals(document.Id));
             var options = new FindOneAndReplaceOptions<T, T>
@@ -69,20 +78,20 @@ namespace MongoDbRepository
                 IsUpsert = true,
                 ReturnDocument = ReturnDocument.After
             };
-            return _collection.FindOneAndReplaceAsync(filter, document, options);
+            return _collection.FindOneAndReplaceAsync(filter, document, options, cancellationToken);
         }
 
-        public Task<UpdateResult> UpdateDocumentPropertyByFieldAsync<J>(string filterField, string filterValue, string fieldToUpdate, J value)
+        public Task<T> UpdateDocumentFieldAsync<I>(ObjectId id, string fieldToUpdate, I value, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var filter = Builders<T>.Filter.Eq(filterField, filterValue);
+            var filter = Builders<T>.Filter.Where(x => x.Id.Equals(id));
             var update = Builders<T>.Update.Set(fieldToUpdate, value);
-            return _collection.UpdateOneAsync(filter, update);
+            return _collection.FindOneAndUpdateAsync(filter, update, cancellationToken: cancellationToken);
         }
 
-        public IFindFluent<T, T> GetDocumentsByField(string fieldName, string fieldValue)
+        public Task<IAsyncCursor<T>> GetDocumentsByFieldAsync<I>(string fieldName, I fieldValue, CancellationToken cancellationToken = default(CancellationToken))
         {
             var filter = Builders<T>.Filter.Eq(fieldName, fieldValue);
-            return _collection.Find(filter);
+            return _collection.FindAsync(filter, cancellationToken: cancellationToken);
         }
     }
 }
