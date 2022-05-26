@@ -41,6 +41,11 @@ namespace MongoDbRepository
             return _collection.InsertOneAsync(document, cancellationToken: cancellationToken);
         }
 
+        public Task AddDocumentsAsync(IEnumerable<T> documents, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return _collection.InsertManyAsync(documents, cancellationToken: cancellationToken);
+        }
+
         public Task<T> DeleteDocumentAsync(ObjectId id, CancellationToken cancellationToken = default(CancellationToken))
         {
 
@@ -81,7 +86,14 @@ namespace MongoDbRepository
             return _collection.FindOneAndReplaceAsync(filter, document, options, cancellationToken);
         }
 
-        public Task<T> UpdateDocumentFieldAsync<I>(ObjectId id, string fieldToUpdate, I value, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<UpdateResult> UpdateDocumentsFieldAsync<I>(Expression<Func<T, bool>> linqExpression, string fieldToUpdate, I value, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var filter = Builders<T>.Filter.Where(linqExpression);
+            var update = Builders<T>.Update.Set(fieldToUpdate, value);
+            return _collection.UpdateManyAsync(filter, update, cancellationToken: cancellationToken);
+        }
+
+        public Task<T> UpdateDocumentFieldByIdAsync<I>(ObjectId id, string fieldToUpdate, I value, CancellationToken cancellationToken = default)
         {
             var filter = Builders<T>.Filter.Where(x => x.Id.Equals(id));
             var update = Builders<T>.Update.Set(fieldToUpdate, value);
@@ -92,6 +104,11 @@ namespace MongoDbRepository
         {
             var filter = Builders<T>.Filter.Eq(fieldName, fieldValue);
             return _collection.FindAsync(filter, cancellationToken: cancellationToken);
+        }
+
+        public Task<T> DeleteDocumentByIdAsync(ObjectId id, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
     }
 }
