@@ -46,7 +46,7 @@ namespace MongoDbRepository
             return _collection.InsertManyAsync(documents, cancellationToken: cancellationToken);
         }
 
-        public Task<T> DeleteDocumentAsync(ObjectId id, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<T> DeleteDocumentByIdAsync(ObjectId id, CancellationToken cancellationToken = default)
         {
 
             var filter = Builders<T>.Filter.Where(x => x.Id.Equals(id));
@@ -104,11 +104,6 @@ namespace MongoDbRepository
         {
             var filter = Builders<T>.Filter.Eq(fieldName, fieldValue);
             return _collection.FindAsync(filter, cancellationToken: cancellationToken);
-        }
-
-        public Task<T> DeleteDocumentByIdAsync(ObjectId id, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
         }
     }
 }
