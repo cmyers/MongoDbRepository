@@ -1,6 +1,6 @@
 ﻿namespace MongoDbRepository.Attributes
 {
-    public class MongoDbUnique : Attribute
+    public class MongoDbUniqueAttribute : Attribute
     {
     }
 }
