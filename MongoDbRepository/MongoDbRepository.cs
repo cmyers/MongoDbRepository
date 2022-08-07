@@ -23,7 +23,7 @@ namespace MongoDbRepository
 
         private void InitialiseCustom()
         {
-            var uniqueStringIndexProperties = typeof(T).GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(MongoDbUnique))).ToList();
+            var uniqueStringIndexProperties = typeof(T).GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(MongoDbUniqueAttribute))).ToList();
 
             foreach (var propertyInfo in uniqueStringIndexProperties)
             {
@@ -34,6 +34,8 @@ namespace MongoDbRepository
                 var indexModel = new CreateIndexModel<T>(indexDefinition, options);
                 _collection.Indexes.CreateOne(indexModel);
             }
+
+            _collection.Indexes.CreateOne(new CreateIndexModel<T>(Builders<T>.IndexKeys.Text("$**")));
         }
 
         public Task AddDocumentAsync(T document, CancellationToken cancellationToken = default(CancellationToken))
