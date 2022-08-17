@@ -38,6 +38,11 @@ namespace MongoDbRepository
             _collection.Indexes.CreateOne(new CreateIndexModel<T>(Builders<T>.IndexKeys.Text("$**")));
         }
 
+        public IMongoCollection<T> Collection
+        { 
+            get { return _collection; } 
+        }
+
         public Task AddDocumentAsync(T document, CancellationToken cancellationToken = default(CancellationToken))
         {
             return _collection.InsertOneAsync(document, cancellationToken: cancellationToken);
