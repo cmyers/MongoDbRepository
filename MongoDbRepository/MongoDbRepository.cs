@@ -39,7 +39,7 @@ namespace MongoDbRepository
         }
 
         public IMongoCollection<T> Collection
-        { 
+        {
             get { return _collection; } 
         }
 
@@ -75,6 +75,18 @@ namespace MongoDbRepository
         public IMongoQueryable<T> GetDocuments()
         {
             return _collection.AsQueryable();
+        }
+
+        public Task<IAsyncCursor<T>> GetDocumentsAsync(FilterDefinition<T> filterDefinition)
+        {
+            return _collection.FindAsync(filterDefinition);
+        }
+
+        public Task<IAsyncCursor<T>> GetDocumentsAsync(FilterDefinition<T> filterDefinition, PipelineDefinition<T, T> pipeline)
+        {
+            pipeline = pipeline.Match(filterDefinition);    
+            return _collection.AggregateAsync(pipeline);
+          
         }
 
         public IMongoQueryable<T> GetDocuments(Expression<Func<T, bool>> linqExpression)

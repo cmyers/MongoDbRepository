@@ -14,6 +14,8 @@ namespace MongoDbRepository.Interfaces
         Task<T> GetDocumentByIdAsync(ObjectId id, CancellationToken cancellationToken = default(CancellationToken));
         IMongoQueryable<T> GetDocuments();
         IMongoQueryable<T> GetDocuments(Expression<Func<T, bool>> linqExpression);
+        Task<IAsyncCursor<T>> GetDocumentsAsync(FilterDefinition<T> filterDefinition);
+        Task<IAsyncCursor<T>> GetDocumentsAsync(FilterDefinition<T> filterDefinition, PipelineDefinition<T, T> pipeline);
         Task<T> UpdateDocumentAsync(T document, CancellationToken cancellationToken = default(CancellationToken));
         Task<T> UpdateDocumentFieldByIdAsync<I>(ObjectId id, string fieldToUpdate, I value, CancellationToken cancellationToken = default(CancellationToken));
         Task<UpdateResult> UpdateDocumentsFieldAsync<I>(Expression<Func<T, bool>> linqExpression, string fieldToUpdate, I value, CancellationToken cancellationToken = default(CancellationToken));
