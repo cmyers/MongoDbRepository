@@ -7,6 +7,7 @@ namespace MongoDbRepository.Interfaces
 {
     public interface IMongoDbRepository<T>
     {
+        IMongoCollection<T> Collection {  get; }
         Task AddDocumentAsync(T document, CancellationToken cancellationToken = default(CancellationToken));
         Task AddDocumentsAsync(IEnumerable<T> documents, CancellationToken cancellationToken = default(CancellationToken));
         Task<T> DeleteDocumentByIdAsync(ObjectId id, CancellationToken cancellationToken = default(CancellationToken));
